@@ -1,0 +1,14 @@
+name: Pull Request validation
+
+on: [pull_request]
+
+
+jobs:
+  aiagentmarketplace-contracts-ci:
+    name: Run aiagentmarketplace-contracts validation
+    uses: ./.github/workflows/aiagentmarketplace-contracts-ci.yaml
+
+  aiagentmarketplace-frontend-ci:
+    name: Run aiagentmarketplace-frontend validation
+    uses: ./.github/workflows/aiagentmarketplace-frontend-ci.yaml
+

@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.vscode/**'
+      - '.idea/**'
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  aiagentmarketplace-contracts-validate:
+    name: Run aiagentmarketplace-contracts release
+    secrets: inherit
+    uses: ./.github/workflows/aiagentmarketplace-contracts-ci.yaml
+
+  aiagentmarketplace-contracts-release:
+    name: Run aiagentmarketplace-contracts release
+    secrets: inherit
+    uses: ./.github/workflows/aiagentmarketplace-contracts-cd.yaml
+    needs: aiagentmarketplace-contracts-validate
+
+  aiagentmarketplace-frontend-validate:
+    name: Run aiagentmarketplace-frontend release
+    secrets: inherit
+    uses: ./.github/workflows/aiagentmarketplace-frontend-ci.yaml
+
+  aiagentmarketplace-frontend-release:
+    name: Run aiagentmarketplace-frontend release
+    secrets: inherit
+    uses: ./.github/workflows/aiagentmarketplace-frontend-cd.yaml
+    needs: aiagentmarketplace-frontend-validate

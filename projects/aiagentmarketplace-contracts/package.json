@@ -1,0 +1,23 @@
+{
+  "name": "aiagentmarketplace-contracts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "algokit compile ts ./src/contracts --out-dir ./artifacts && npm run generate:client && npm run sync:frontend-spec",
+    "build:one": "algokit compile ts ./src/contracts/AiApiMarketplace.algo.ts --out-dir ./artifacts",
+    "generate:client": "algokit generate client ./src/contracts/artifacts/AiApiMarketplace.arc56.json -l typescript -o ./src/client/{contract_name}Client.ts",
+    "sync:frontend-spec": "node ./scripts/sync-frontend-spec.mjs",
+    "deploy:localnet": "tsx ./deploy-config.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@algorandfoundation/algokit-utils": "^8.2.2",
+    "@algorandfoundation/algorand-typescript": "^1.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.8"
+  }
+}

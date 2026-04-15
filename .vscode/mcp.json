@@ -4,13 +4,24 @@
       "type": "http",
       "url": "https://algorand-docs.mcp.kapa.ai/"
     },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    },
     "vibekit-mcp": {
       "type": "stdio",
       "command": "C:\\Users\\Mohammed Omair\\.vibekit\\bin\\vibekit.exe",
       "args": [
         "mcp"
       ],
-      "env": {}
+      "env": {
+        "ALGORAND_NETWORK": "localnet",
+        "ALGORAND_ALGOD": "http://localhost:4001",
+        "ALGORAND_TOKEN": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ALGORAND_KMD": "http://localhost:4002",
+        "ALGORAND_KMD_TOKEN": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ALGORAND_INDEXER": "http://localhost:8980"
+      }
     }
   }
 }

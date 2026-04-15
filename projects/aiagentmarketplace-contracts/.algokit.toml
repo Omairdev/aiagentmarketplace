@@ -1,0 +1,8 @@
+[project]
+name = "aiagentmarketplace-contracts"
+type = "contract"
+
+[project.run]
+build = { commands = ["npm run build"], description = "Build smart contracts" }
+test = { commands = ["npm run test"], description = "Run contract tests" }
+deploy = { commands = ["npm run deploy:localnet"], description = "Deploy contract to LocalNet" }

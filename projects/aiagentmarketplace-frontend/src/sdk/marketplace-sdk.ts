@@ -5,6 +5,7 @@ import {
   loadMarketplaceListings,
   loadPermissionStatus,
   payForAccess,
+  submitRating,
   type ApiListing,
   type EarningsSnapshot,
   type PermissionStatus,
@@ -118,6 +119,29 @@ export class MarketplaceSdk {
       sender,
       transactionSigner,
       apiListing: listing,
+    })
+  }
+
+  async submitRating(apiIdentifier: string, rating: number): Promise<string> {
+    const sender = this.options.sender
+    const transactionSigner = this.options.transactionSigner
+
+    if (!sender || !transactionSigner) {
+      throw new Error('Sender and transactionSigner are required. Call withSigner() before submitRating().')
+    }
+
+    const listing = await this.getApiById(apiIdentifier)
+    if (!listing) {
+      throw new Error(`API listing not found for identifier: ${apiIdentifier}`)
+    }
+
+    return submitRating({
+      network: this.options.network,
+      appId: this.options.appId,
+      sender,
+      transactionSigner,
+      apiListing: listing,
+      rating,
     })
   }
 }

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
-import { checkUserAccess, fetchUserPurchaseHistory, type ApiListing } from '../lib/marketplace'
-import { marketplaceConfig, type MarketplaceNetwork } from '../config'
+import React, { useEffect, useMemo, useState } from 'react'
+import { CheckCircle2, ChevronDown, ChevronUp, Copy, Star, TrendingUp } from 'lucide-react'
+import { fetchUserPurchaseHistory, type ApiListing } from '../lib/marketplace'
+import { type MarketplaceNetwork } from '../config'
 import AccessApiModal from './AccessApiModal'
 
 interface PurchaseHistoryPanelProps {
@@ -30,6 +31,14 @@ export const PurchaseHistoryPanel: React.FC<PurchaseHistoryPanelProps> = ({
   const [modalOpen, setModalOpen] = useState(false)
   const [modalApi, setModalApi] = useState<ApiListing | null>(null)
   const [ratingSubmitting, setRatingSubmitting] = useState(false)
+
+  const totals = useMemo(() => {
+    const totalSpendMicroAlgos = purchasedApis.reduce((sum, api) => sum + api.priceMicroAlgos, 0n)
+    return {
+      activeCount: purchasedApis.length,
+      totalSpendMicroAlgos,
+    }
+  }, [purchasedApis])
 
   useEffect(() => {
     if (!isConnected || !appId || !userAddress) {
@@ -63,10 +72,6 @@ export const PurchaseHistoryPanel: React.FC<PurchaseHistoryPanelProps> = ({
   const handleCopyEndpoint = async (endpoint: string) => {
     try {
       await navigator.clipboard.writeText(endpoint)
-      // Visual feedback could be added here
-      setTimeout(() => {
-        setExpandedId(null)
-      }, 1000)
     } catch (err) {
       console.error('Failed to copy:', err)
     }
@@ -94,83 +99,91 @@ export const PurchaseHistoryPanel: React.FC<PurchaseHistoryPanelProps> = ({
     if (!api.endpoint) return 'curl https://example.com/api'
     return `curl -H "Authorization: Bearer YOUR_TOKEN" ${api.endpoint}`
   }
+
   return (
-    <div style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-      <h3 style={{ marginBottom: '15px', fontSize: '18px', fontWeight: '600' }}>
-        Your Purchased APIs ({purchasedApis.length})
-      </h3>
+    <div className="space-y-6 rounded-3xl border border-slate-800 bg-slate-950/40 p-6 shadow-2xl shadow-black/20">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h3 className="text-2xl font-semibold text-white">Your Purchased APIs ({purchasedApis.length})</h3>
+          <p className="mt-1 text-sm text-slate-400">
+            APIs and agents you&apos;ve purchased and can access immediately.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-300">
+            <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Active APIs</div>
+            <div className="mt-1 text-2xl font-bold text-emerald-400">{totals.activeCount}</div>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-300">
+            <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Total Spend</div>
+            <div className="mt-1 text-2xl font-bold text-blue-400">
+              {Number(totals.totalSpendMicroAlgos) / 1_000_000} ALGO
+            </div>
+          </div>
+        </div>
+      </div>
 
       {loading && (
-        <>
-          <p style={{ color: '#666', fontStyle: 'italic' }}>Loading purchase history...</p>
-        </>
+        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-sm text-blue-200">
+          Loading purchase history...
+        </div>
       )}
 
       {error && (
-        <>
-          <div style={{ padding: '10px', backgroundColor: '#ffe6e6', borderRadius: '4px', color: '#d32f2f', marginBottom: '15px' }}>
-            <strong>Error:</strong> {error}
-          </div>
-        </>
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <strong>Error:</strong> {error}
+        </div>
       )}
 
       {!loading && purchasedApis.length === 0 && (
-        <p style={{ color: '#999' }}>No purchased APIs yet. Browse the marketplace to get started.</p>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-8 text-center text-slate-400">
+          No purchased APIs yet. Browse the marketplace to get started.
+        </div>
       )}
 
-      <div style={{ display: 'grid', gap: '12px', marginTop: '15px' }}>
+      <div className="grid gap-4">
         {purchasedApis.map((api) => (
           <div
             key={api.identifier}
-            style={{
-              borderRadius: '6px',
-              padding: '12px',
-              backgroundColor: '#fff',
-              border: '1px solid #333',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
+            className="cursor-pointer rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-5 transition hover:-translate-y-0.5 hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/10"
             onClick={() => handleToggleExpand(api.identifier)}
           >
-            <div style={{ flex: 1 }}>
-              <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{api.title}</h4>
-              <p style={{ margin: '0', fontSize: '13px', color: '#666' }}>{api.description}</p>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '6px', fontSize: '12px', color: '#999' }}>
-                  <span>📍 {api.publisher}</span>
-                  <span>💰 {Number(api.priceMicroAlgos) / 1_000_000} ALGO</span>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="mb-2 flex flex-wrap items-center gap-3">
+                  <h4 className="text-lg font-semibold text-white">{api.title}</h4>
+                  <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-300">
+                    {api.publisher ?? 'ravi'}
+                  </span>
+                  <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-300">
+                    Authorized
+                  </span>
+                </div>
+                <p className="max-w-3xl text-sm text-slate-400">{api.description}</p>
+                <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-400">
+                  <span className="inline-flex items-center gap-2">
+                    <TrendingUp className="size-4 text-emerald-400" />
+                    {Number(api.priceMicroAlgos) / 1_000_000} ALGO
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <Star className="size-4 text-amber-400" />
+                    Access granted
+                  </span>
                 </div>
               </div>
-            <div
-              style={{
-                width: '24px',
-                display: 'flex',
-                justifyContent: 'center',
-                backgroundColor: '#f0f0f0',
-                borderRadius: '4px',
-                fontSize: '14px',
-              }}
-            >
-                {expandedId === api.identifier ? '▼' : '▶'}
+              <div className="rounded-xl border border-slate-700 bg-slate-950/50 p-2 text-slate-300">
+                {expandedId === api.identifier ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </div>
             </div>
 
             {expandedId === api.identifier && (
-              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #eee' }}>
+              <div className="mt-5 border-t border-slate-700 pt-5">
                 {api.endpoint && (
-                  <div style={{ marginBottom: '12px' }}>
-                    <p style={{ margin: '0 0 6px 0', fontSize: '12px', fontWeight: '600', color: '#333' }}>
+                  <div className="mb-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                       Endpoint
                     </p>
-                    <code
-                      style={{
-                        display: 'block',
-                        padding: '8px',
-                        backgroundColor: '#f5f5f5',
-                        borderRadius: '4px',
-                        fontSize: '11px',
-                        wordBreak: 'break-all',
-                        userSelect: 'all',
-                      }}
-                    >
+                    <code className="block rounded-xl border border-slate-700 bg-slate-950/60 p-3 font-mono text-xs text-cyan-300 break-all select-all">
                       {api.endpoint}
                     </code>
                     <button
@@ -178,70 +191,33 @@ export const PurchaseHistoryPanel: React.FC<PurchaseHistoryPanelProps> = ({
                         e.stopPropagation()
                         handleCopyEndpoint(api.endpoint!)
                       }}
-                      style={{
-                        marginTop: '6px',
-                        padding: '6px 12px',
-                        backgroundColor: '#4285F4',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                      }}
+                      className="mt-3 inline-flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
                     >
-                      📋 Copy Endpoint
+                      <Copy className="size-4" />
+                      Copy Endpoint
                     </button>
                     <button
                       onClick={(e) => handleOpenAccessModal(api, e)}
-                      style={{
-                        marginLeft: '6px',
-                        marginTop: '6px',
-                        padding: '6px 12px',
-                        backgroundColor: '#4CAF50',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                      }}
+                      className="ml-2 inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-500/20"
                     >
-                      📊 View & Rate
+                      View & Rate
                     </button>
                   </div>
                 )}
 
                 <div>
-                  <p style={{ margin: '0 0 6px 0', fontSize: '12px', fontWeight: '600', color: '#333' }}>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                     Example Usage
                   </p>
-                  <code
-                    style={{
-                      display: 'block',
-                      padding: '8px',
-                      backgroundColor: '#f5f5f5',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      wordBreak: 'break-all',
-                      userSelect: 'all',
-                    }}
-                  >
+                  <code className="block rounded-xl border border-slate-700 bg-slate-950/60 p-3 font-mono text-xs text-amber-200 break-all select-all">
                     {generateCurlExample(api)}
                   </code>
                 </div>
 
-                <div style={{ marginTop: '12px' }}>
-                  <span
-                    style={{
-                      display: 'inline-block',
-                      padding: '6px 12px',
-                      backgroundColor: '#4CAF50',
-                      color: '#fff',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                    }}
-                  >
-                    ✓ Authorized
+                <div className="mt-4">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                    <CheckCircle2 className="size-3.5" />
+                    Authorized
                   </span>
                 </div>
               </div>

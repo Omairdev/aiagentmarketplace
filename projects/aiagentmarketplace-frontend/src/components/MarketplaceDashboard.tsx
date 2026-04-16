@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import { RefreshCw, TrendingUp, Shield } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { RefreshCw, Shield, Sparkles, TrendingUp } from 'lucide-react'
 import type { ApiListing, EarningsSnapshot, PermissionStatus } from '../lib/marketplace'
-import type { ApiAnalytics, ReputationScore, MarketplaceAnalytics } from '../lib/analytics'
-import { formatMicroAlgos, checkUserAccess, type MarketplaceNetwork } from '../lib/marketplace'
+import type { ApiAnalytics, MarketplaceAnalytics, ReputationScore } from '../lib/analytics'
+import { formatMicroAlgos } from '../lib/marketplace'
+import type { MarketplaceNetwork } from '../config'
 import { ApiCard } from './ApiCard'
 import { AnalyticsChart, MarketplaceAnalyticsChart, StatsGrid } from './AnalyticsPanel'
 import { ReputationPanel } from './ReputationPanel'
 import { DeveloperSdkPanel } from './DeveloperSdkPanel'
 import { PurchaseHistoryPanel } from './PurchaseHistoryPanel'
-import { RatingComponent } from './RatingComponent'
 
 interface MarketplaceDashboardProps {
   listings: ApiListing[]
@@ -60,23 +60,127 @@ export function MarketplaceDashboard({
   onSubmitRating,
 }: MarketplaceDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabType>('browse')
-  const [userAccessCache, setUserAccessCache] = useState<Map<string, boolean>>(new Map())
-  const [checkingAccess, setCheckingAccess] = useState(false)
 
   const selectedReputation = selectedListing && reputationScores?.get(selectedListing.identifier)
 
+  const dashboardStats = useMemo(() => {
+    const totalListings = listings.length
+    const averagePriceMicroAlgos =
+      totalListings > 0
+        ? listings.reduce((sum, listing) => sum + Number(listing.priceMicroAlgos), 0) / totalListings
+        : 0
+
+    return {
+      totalListings,
+      activeListings: marketplaceAnalytics?.activeAPIs ?? totalListings,
+      totalVolume: marketplaceAnalytics?.totalVolume ?? 0,
+      averagePriceMicroAlgos,
+    }
+  }, [listings, marketplaceAnalytics])
+
   return (
-    <section className="w-full">
-      {/* Tab Navigation */}
-      <div className="flex gap-2 mb-6 border-b border-dark-700 flex-wrap">
+    <section className="space-y-8">
+      <div className="grid gap-4 lg:grid-cols-[1.05fr_1.4fr]">
+        <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-2xl shadow-black/20">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-blue-500/15 ring-1 ring-blue-400/25">
+              <Sparkles className="size-6 text-blue-400" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold text-white">Marketplace Overview</h2>
+              <p className="text-sm text-slate-400">On-chain API discovery and access control</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Network</div>
+              <div className="mt-2 text-lg font-semibold text-white">{network}</div>
+            </div>
+            <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-slate-500">App ID</div>
+              <div className="mt-2 text-lg font-semibold text-white">{appId?.toString() ?? 'Not configured'}</div>
+            </div>
+            <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Total Volume</div>
+              <div className="mt-2 text-lg font-semibold text-blue-400">
+                {formatMicroAlgos(BigInt(Math.round(dashboardStats.totalVolume * 1_000_000)))}
+              </div>
+            </div>
+            <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+              <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Listings</div>
+              <div className="mt-2 text-lg font-semibold text-pink-400">
+                {dashboardStats.activeListings}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-2xl shadow-black/20">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-semibold text-white">Selected API</h3>
+              <p className="mt-1 text-sm text-slate-400">Inspect the currently highlighted listing.</p>
+            </div>
+            {selectedListing && selectedReputation && (
+              <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                Verified Provider
+              </span>
+            )}
+          </div>
+
+          {selectedListing ? (
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+                <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Title</div>
+                <div className="mt-2 text-lg font-semibold text-white">{selectedListing.title}</div>
+                <p className="mt-3 text-sm text-slate-400">{selectedListing.description}</p>
+                <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-300">
+                  <span className="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1">
+                    {selectedListing.currency}
+                  </span>
+                  <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-blue-300">
+                    {formatMicroAlgos(selectedListing.priceMicroAlgos)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+                <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Permission</div>
+                <div className="mt-2 text-lg font-semibold text-white">
+                  {permissionStatus?.permitted ? 'Granted' : 'Not granted'}
+                </div>
+                <div className="mt-4 text-sm text-slate-400">
+                  {selectedListing.endpoint ? (
+                    <>
+                      <div className="mb-2 text-xs uppercase tracking-[0.18em] text-slate-500">Endpoint</div>
+                      <code className="block rounded-xl border border-slate-700 bg-slate-950/60 p-3 font-mono text-xs text-cyan-300 break-all">
+                        {selectedListing.endpoint}
+                      </code>
+                    </>
+                  ) : (
+                    'Endpoint hidden until the API is registered.'
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-950/40 p-6 text-sm text-slate-400">
+              Select an API to inspect pricing, permission, and access details.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-2">
         {(['browse', 'purchases', 'analytics', 'earnings', 'sdk'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-3 font-medium text-sm transition-colors ${
+            className={`rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
               activeTab === tab
-                ? 'text-accent-blue border-b-2 border-accent-blue'
-                : 'text-dark-400 hover:text-dark-200'
+                ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             {tab === 'browse' && 'Browse APIs'}
@@ -88,16 +192,14 @@ export function MarketplaceDashboard({
         ))}
       </div>
 
-      {/* Browse Tab */}
       {activeTab === 'browse' && (
         <div className="space-y-6">
-          {/* Controls */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={onRefreshListings}
               disabled={loadingListings}
-              className="btn-primary flex items-center gap-2"
+              className="inline-flex items-center gap-2 rounded-2xl bg-blue-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <RefreshCw size={16} />
               {loadingListings ? 'Refreshing...' : 'Refresh listings'}
@@ -107,7 +209,7 @@ export function MarketplaceDashboard({
                 type="button"
                 onClick={onRefreshPermission}
                 disabled={loadingPermission}
-                className="btn-secondary flex items-center gap-2"
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/80 px-4 py-3 text-sm font-semibold text-white transition hover:border-blue-500/40 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Shield size={16} />
                 {loadingPermission ? 'Checking...' : 'Check access'}
@@ -115,19 +217,18 @@ export function MarketplaceDashboard({
             )}
           </div>
 
-          {/* API Listings Grid */}
           <div>
-            <h3 className="subsection-title">Available APIs</h3>
+            <h3 className="mb-4 text-xl font-semibold text-white">Available APIs</h3>
             {listings.length === 0 ? (
-              <div className="card text-center py-12">
-                <p className="text-dark-400">No on-chain listings found.</p>
+              <div className="rounded-3xl border border-slate-800 bg-slate-950/40 py-12 text-center text-slate-400">
+                No on-chain listings found.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {listings.map((listing) => (
                   <ApiCard
                     key={listing.identifier}
-                      api={listing}
+                    api={listing}
                     onSelect={() => onSelectListing(listing.identifier)}
                     isSelected={selectedListing?.identifier === listing.identifier}
                     hasPermission={
@@ -136,59 +237,52 @@ export function MarketplaceDashboard({
                         : false
                     }
                     reputation={reputationScores?.get(listing.identifier)}
-                      onRatingSubmit={
-                        onSubmitRating
-                          ? (rating) => onSubmitRating(listing.identifier, rating)
-                          : undefined
-                      }
+                    onRatingSubmit={
+                      onSubmitRating
+                        ? (rating) => onSubmitRating(listing.identifier, rating)
+                        : undefined
+                    }
                   />
                 ))}
               </div>
             )}
           </div>
 
-          {/* Selected API Details */}
           {selectedListing && (
             <div className="space-y-4">
-              <h3 className="subsection-title">API Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Reputation Panel */}
+              <h3 className="text-xl font-semibold text-white">API Details</h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {selectedReputation && (
                   <div className="md:col-span-1">
                     <ReputationPanel reputation={selectedReputation} />
                   </div>
                 )}
 
-                {/* Details and Access */}
                 <div className={`${selectedReputation ? 'md:col-span-2' : 'md:col-span-3'}`}>
-                  <div className="card space-y-4">
+                  <div className="space-y-5 rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-2xl shadow-black/20">
                     <div>
-                      <h4 className="font-semibold text-dark-100 mb-2">Description</h4>
-                      <p className="text-dark-400 text-sm">{selectedListing.description}</p>
+                      <h4 className="mb-2 text-lg font-semibold text-white">Description</h4>
+                      <p className="text-sm text-slate-400">{selectedListing.description}</p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs text-dark-400">Currency</label>
-                        <p className="font-medium text-dark-100">{selectedListing.currency}</p>
+                        <label className="text-xs text-slate-500">Currency</label>
+                        <p className="font-medium text-slate-100">{selectedListing.currency}</p>
                       </div>
                       <div>
-                        <label className="text-xs text-dark-400">Price</label>
-                        <p className="font-medium text-accent-blue">
-                          {formatMicroAlgos(selectedListing.priceMicroAlgos)}
-                        </p>
+                        <label className="text-xs text-slate-500">Price</label>
+                        <p className="font-medium text-blue-400">{formatMicroAlgos(selectedListing.priceMicroAlgos)}</p>
                       </div>
                     </div>
 
                     {permissionStatus?.permitted ? (
-                      <div className="bg-emerald-900/20 border border-emerald-700/50 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                          <span className="text-sm font-medium text-emerald-300">
-                            Access Granted
-                          </span>
+                      <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+                        <div className="mb-3 flex items-center gap-2">
+                          <div className="size-2 rounded-full bg-emerald-400" />
+                          <span className="text-sm font-medium text-emerald-200">Access Granted</span>
                         </div>
-                        <p className="text-xs text-emerald-300/80 font-mono break-all">
+                        <p className="break-all font-mono text-xs text-emerald-100/80">
                           {selectedListing.endpoint || 'Loading endpoint...'}
                         </p>
                       </div>
@@ -197,7 +291,7 @@ export function MarketplaceDashboard({
                         type="button"
                         onClick={onPayForAccess}
                         disabled={paymentBusy || loadingPermission}
-                        className="btn-primary w-full"
+                        className="inline-flex w-full items-center justify-center rounded-2xl bg-blue-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {paymentBusy ? 'Submitting payment...' : 'Pay for access'}
                       </button>
@@ -210,7 +304,6 @@ export function MarketplaceDashboard({
         </div>
       )}
 
-      {/* Purchases Tab */}
       {activeTab === 'purchases' && (
         <div className="space-y-6">
           <PurchaseHistoryPanel
@@ -223,25 +316,24 @@ export function MarketplaceDashboard({
         </div>
       )}
 
-      {/* Analytics Tab */}
       {activeTab === 'analytics' && (
         <div className="space-y-6">
           {marketplaceAnalytics && <StatsGrid analytics={marketplaceAnalytics} type="marketplace" />}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {marketplaceAnalytics && <MarketplaceAnalyticsChart data={marketplaceAnalytics} />}
 
             {selectedListing && apiAnalytics && (
               <div className="space-y-4">
                 <div>
-                  <h3 className="subsection-title flex items-center gap-2">
+                  <h3 className="flex items-center gap-2 text-xl font-semibold text-white">
                     <TrendingUp size={20} />
                     {selectedListing.title} Performance
                   </h3>
                 </div>
                 {loadingAnalytics ? (
-                  <div className="card text-center py-12">
-                    <p className="text-dark-400">Loading analytics...</p>
+                  <div className="rounded-3xl border border-slate-800 bg-slate-950/40 py-12 text-center text-slate-400">
+                    Loading analytics...
                   </div>
                 ) : (
                   <>
@@ -254,14 +346,13 @@ export function MarketplaceDashboard({
           </div>
 
           {!selectedListing && (
-            <div className="card text-center py-12">
-              <p className="text-dark-400">Select an API to view its analytics</p>
+            <div className="rounded-3xl border border-slate-800 bg-slate-950/40 py-12 text-center text-slate-400">
+              Select an API to view its analytics
             </div>
           )}
         </div>
       )}
 
-      {/* Earnings Tab */}
       {activeTab === 'earnings' && (
         <div className="space-y-6">
           <div className="flex gap-2">
@@ -269,7 +360,7 @@ export function MarketplaceDashboard({
               type="button"
               onClick={onRefreshEarnings}
               disabled={loadingEarnings}
-              className="btn-primary flex items-center gap-2"
+              className="inline-flex items-center gap-2 rounded-2xl bg-blue-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <RefreshCw size={16} />
               {loadingEarnings ? 'Refreshing...' : 'Refresh earnings'}
@@ -278,51 +369,49 @@ export function MarketplaceDashboard({
 
           {earnings ? (
             <div className="space-y-6">
-              <div className="card-premium">
-                <h3 className="subsection-title">Provider Account</h3>
+              <div className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-2xl shadow-black/20">
+                <h3 className="text-xl font-semibold text-white">Provider Account</h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs text-dark-400">Contract Address</label>
-                    <p className="font-mono text-xs text-dark-200 break-all">
-                      {earnings.appAddress}
-                    </p>
+                    <label className="text-xs text-slate-500">Contract Address</label>
+                    <p className="break-all font-mono text-xs text-slate-200">{earnings.appAddress}</p>
                   </div>
                   <div>
-                    <label className="text-xs text-dark-400 mb-1 block">Total Balance</label>
+                    <label className="mb-1 block text-xs text-slate-500">Total Balance</label>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-bold text-accent-blue">
+                      <span className="text-4xl font-bold text-blue-400">
                         {formatMicroAlgos(earnings.balanceMicroAlgos)}
                       </span>
-                      <span className="text-dark-400">ALGO</span>
+                      <span className="text-slate-400">ALGO</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="card">
-                <h3 className="subsection-title">Recent Payments</h3>
+              <div className="rounded-3xl border border-slate-800 bg-slate-950/40 p-6 shadow-2xl shadow-black/20">
+                <h3 className="text-xl font-semibold text-white">Recent Payments</h3>
                 {earnings.recentPayments.length === 0 ? (
-                  <p className="text-dark-400 text-sm">No recent payments</p>
+                  <p className="text-sm text-slate-400">No recent payments</p>
                 ) : (
                   <div className="space-y-2">
                     {earnings.recentPayments.map((payment) => (
                       <div
                         key={payment.id || `${payment.sender}-${payment.confirmedRound ?? 'pending'}`}
-                        className="flex items-center justify-between p-3 bg-dark-700/50 rounded-lg hover:bg-dark-700 transition-colors"
+                        className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/60 p-4 transition hover:border-blue-500/40 hover:bg-slate-900"
                       >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                        <div className="flex min-w-0 flex-1 items-center gap-3">
+                          <div className="size-2 flex-shrink-0 rounded-full bg-emerald-400" />
                           <div className="min-w-0">
-                            <p className="text-sm text-dark-200 font-mono truncate">
+                            <p className="truncate font-mono text-sm text-slate-200">
                               {payment.sender ?? 'Unknown sender'}
                             </p>
-                            <p className="text-xs text-dark-500">
+                            <p className="text-xs text-slate-500">
                               Round {payment.confirmedRound ?? 'pending'}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-sm font-semibold text-accent-blue">
+                        <div className="flex-shrink-0 text-right">
+                          <p className="text-sm font-semibold text-blue-400">
                             +{formatMicroAlgos(payment.amountMicroAlgos)}
                           </p>
                         </div>
@@ -333,17 +422,14 @@ export function MarketplaceDashboard({
               </div>
             </div>
           ) : (
-            <div className="card text-center py-12">
-              <p className="text-dark-400">No earnings data loaded.</p>
+            <div className="rounded-3xl border border-slate-800 bg-slate-950/40 py-12 text-center text-slate-400">
+              No earnings data loaded.
             </div>
           )}
         </div>
       )}
 
-      {/* Developer SDK Tab */}
-      {activeTab === 'sdk' && (
-        <DeveloperSdkPanel appId={appId} selectedApiId={selectedListing?.identifier} />
-      )}
+      {activeTab === 'sdk' && <DeveloperSdkPanel appId={appId} selectedApiId={selectedListing?.identifier} />}
     </section>
   )
 }

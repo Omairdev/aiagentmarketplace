@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Copy } from 'lucide-react'
+import { Copy, X } from 'lucide-react'
 import type { ApiListing } from '../lib/marketplace'
 import { RatingComponent } from './RatingComponent'
 
@@ -39,94 +39,39 @@ export const AccessApiModal: React.FC<AccessApiModalProps> = ({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 50,
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        style={{
-          backgroundColor: '#1a1a1a',
-          borderRadius: '12px',
-          padding: '24px',
-          maxWidth: '600px',
-          width: '90%',
-          maxHeight: '90vh',
-          overflow: 'auto',
-          border: '1px solid #333',
-          boxShadow: '0 20px 25px rgba(0, 0, 0, 0.3)',
-        }}
+        className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6 shadow-2xl shadow-black/40"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: '#fff' }}>Access: {api.title}</h2>
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold text-white">Access: {api.title}</h2>
+            <p className="mt-1 text-sm text-slate-400">Copy the endpoint, review usage, and rate this API.</p>
+          </div>
           <button
             onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#999',
-              padding: '4px',
-            }}
+            className="rounded-full border border-slate-700 bg-slate-950/60 p-2 text-slate-300 transition hover:border-blue-500/40 hover:text-white"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        <div style={{ display: 'grid', gap: '16px' }}>
-          {/* Endpoint Section */}
+        <div className="grid gap-4">
           {api.endpoint ? (
-            <div style={{ backgroundColor: '#262626', borderRadius: '8px', padding: '12px' }}>
-              <label style={{ fontSize: '12px', color: '#999', display: 'block', marginBottom: '6px' }}>
+            <div className="rounded-2xl border border-slate-700 bg-slate-950/50 p-4">
+              <label className="mb-2 block text-xs uppercase tracking-[0.18em] text-slate-500">
                 API Endpoint
               </label>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  backgroundColor: '#1a1a1a',
-                  borderRadius: '4px',
-                  padding: '8px',
-                }}
-              >
-                <code
-                  style={{
-                    flex: 1,
-                    fontSize: '12px',
-                    fontFamily: 'monospace',
-                    wordBreak: 'break-all',
-                    color: '#4CAF50',
-                    userSelect: 'all',
-                  }}
-                >
+              <div className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-950/60 p-3 sm:flex-row sm:items-center">
+                <code className="flex-1 break-all font-mono text-xs text-cyan-300 select-all">
                   {api.endpoint}
                 </code>
                 <button
                   onClick={() => handleCopyToClipboard(api.endpoint || '', 'endpoint')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '6px 12px',
-                    backgroundColor: copiedField === 'endpoint' ? '#2196F3' : '#4285F4',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-400"
                 >
                   <Copy size={14} />
                   {copiedField === 'endpoint' ? 'Copied!' : 'Copy'}
@@ -135,50 +80,17 @@ export const AccessApiModal: React.FC<AccessApiModalProps> = ({
             </div>
           ) : null}
 
-          {/* Example Usage */}
-          <div style={{ backgroundColor: '#262626', borderRadius: '8px', padding: '12px' }}>
-            <label style={{ fontSize: '12px', color: '#999', display: 'block', marginBottom: '6px' }}>
+          <div className="rounded-2xl border border-slate-700 bg-slate-950/50 p-4">
+            <label className="mb-2 block text-xs uppercase tracking-[0.18em] text-slate-500">
               Example Usage (curl)
             </label>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '8px',
-                backgroundColor: '#1a1a1a',
-                borderRadius: '4px',
-                padding: '8px',
-              }}
-            >
-              <code
-                style={{
-                  flex: 1,
-                  fontSize: '11px',
-                  fontFamily: 'monospace',
-                  wordBreak: 'break-all',
-                  color: '#FFB74D',
-                  userSelect: 'all',
-                  lineHeight: '1.4',
-                }}
-              >
+            <div className="flex flex-col gap-3 rounded-xl border border-slate-700 bg-slate-950/60 p-3 sm:flex-row sm:items-start">
+              <code className="flex-1 break-all font-mono text-xs leading-6 text-amber-200 select-all">
                 {generateCurlExample()}
               </code>
               <button
                 onClick={() => handleCopyToClipboard(generateCurlExample(), 'curl')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '6px 12px',
-                  backgroundColor: copiedField === 'curl' ? '#2196F3' : '#4285F4',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:border-blue-500/40 hover:bg-slate-800"
               >
                 <Copy size={14} />
                 {copiedField === 'curl' ? 'Copied!' : 'Copy'}
@@ -186,44 +98,26 @@ export const AccessApiModal: React.FC<AccessApiModalProps> = ({
             </div>
           </div>
 
-          {/* API Info */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div>
-              <label style={{ fontSize: '12px', color: '#999', display: 'block', marginBottom: '4px' }}>
-                Publisher
-              </label>
-              <p style={{ margin: 0, fontSize: '14px', color: '#fff' }}>{api.publisher || 'N/A'}</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-slate-700 bg-slate-950/50 p-4">
+              <label className="mb-2 block text-xs uppercase tracking-[0.18em] text-slate-500">Publisher</label>
+              <p className="text-sm text-white">{api.publisher || 'N/A'}</p>
             </div>
-            <div>
-              <label style={{ fontSize: '12px', color: '#999', display: 'block', marginBottom: '4px' }}>
-                Price
-              </label>
-              <p style={{ margin: 0, fontSize: '14px', color: '#4CAF50' }}>
-                {Number(api.priceMicroAlgos) / 1_000_000} ALGO
-              </p>
+            <div className="rounded-2xl border border-slate-700 bg-slate-950/50 p-4">
+              <label className="mb-2 block text-xs uppercase tracking-[0.18em] text-slate-500">Price</label>
+              <p className="text-sm text-blue-400">{Number(api.priceMicroAlgos) / 1_000_000} ALGO</p>
             </div>
           </div>
 
-          {/* Rating Section */}
           <RatingComponent
             apiListing={api}
             onSubmitRating={onSubmitRating}
             isLoading={ratingLoading}
           />
 
-          {/* Close Button */}
           <button
             onClick={onClose}
-            style={{
-              padding: '10px 16px',
-              backgroundColor: '#4285F4',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: '500',
-              width: '100%',
-            }}
+            className="inline-flex w-full items-center justify-center rounded-2xl bg-blue-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-400"
           >
             Close
           </button>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNetwork, useWallet } from '@txnlab/use-wallet-react'
+import { Layers3, LayoutGrid, Sparkles } from 'lucide-react'
 import { marketplaceConfig, type MarketplaceNetwork } from './config'
 import { MarketplaceDashboard } from './components/MarketplaceDashboard'
 import { SdkHarnessPage } from './components/SdkHarnessPage'
@@ -11,6 +12,7 @@ import {
   loadMarketplaceListings,
   loadPermissionStatus,
   payForAccess,
+  submitRating,
 } from './lib/marketplace'
 import { loadApiAnalytics, loadReputationScore, loadMarketplaceAnalytics } from './lib/analytics'
 
@@ -280,108 +282,134 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b border-dark-700 bg-dark-800/50 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-dark-50">AI API Marketplace</h1>
-              <p className="text-sm text-dark-400 mt-1">
-                Direct wallet-to-contract integration for on-chain API discovery and access control
-              </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+      <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/85 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-blue-500/15 ring-1 ring-blue-400/25">
+                <Layers3 className="size-6 text-blue-400" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight text-white">AI API Marketplace</h1>
+                <p className="mt-1 max-w-2xl text-sm text-slate-400">
+                  Direct wallet-to-contract integration for on-chain API discovery and access control.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-400">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+                    <Sparkles className="size-3.5 text-cyan-400" />
+                    Loaded on-chain listings from box storage
+                  </span>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1">
+                    <LayoutGrid className="size-3.5 text-blue-400" />
+                    App ID {marketplaceConfig.appId?.toString() ?? 'Not configured'}
+                  </span>
+                </div>
+              </div>
             </div>
+
             <WalletPanel />
           </div>
 
-          <div className="flex gap-2 mb-4">
-            <button
-              type="button"
-              className={view === 'marketplace' ? 'btn-primary' : 'btn-secondary'}
-              onClick={() => setView('marketplace')}
-            >
-              Marketplace
-            </button>
-            <button
-              type="button"
-              className={view === 'sdk' ? 'btn-primary' : 'btn-secondary'}
-              onClick={() => setView('sdk')}
-            >
-              SDK Harness
-            </button>
-          </div>
-
-          {message && (
-            <div className={`p-3 rounded-lg text-sm ${
-              message.includes('Error') || message.includes('failed')
-                ? 'bg-red-900/20 border border-red-700/50 text-red-300'
-                : 'bg-blue-900/20 border border-blue-700/50 text-blue-300'
-            }`}>
-              {message}
+          <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-1">
+              <button
+                type="button"
+                className={view === 'marketplace' ? 'rounded-xl bg-blue-500 px-4 py-2 font-semibold text-white shadow-lg shadow-blue-500/20' : 'rounded-xl px-4 py-2 font-medium text-slate-400 transition hover:text-white'}
+                onClick={() => setView('marketplace')}
+              >
+                Marketplace
+              </button>
+              <button
+                type="button"
+                className={view === 'sdk' ? 'rounded-xl bg-blue-500 px-4 py-2 font-semibold text-white shadow-lg shadow-blue-500/20' : 'rounded-xl px-4 py-2 font-medium text-slate-400 transition hover:text-white'}
+                onClick={() => setView('sdk')}
+              >
+                SDK Harness
+              </button>
             </div>
-          )}
 
-          <div className="flex items-center justify-between mt-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-              <div>
-                <span className="text-dark-400">Network</span>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-xs text-slate-400">
+                <span className="mb-1 block text-[11px] uppercase tracking-[0.18em] text-slate-500">Network</span>
                 <select
                   value={network}
                   onChange={(event) => setActiveNetwork(event.target.value)}
-                  className="input-field mt-1"
+                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950/80 px-3 py-2 text-sm text-white outline-none transition focus:border-blue-500"
                 >
                   <option value="localnet">localnet</option>
                   <option value="testnet">testnet</option>
                   <option value="mainnet">mainnet</option>
                 </select>
-              </div>
-              <div>
-                <span className="text-dark-400">App ID</span>
-                <p className="font-mono text-dark-200 mt-1">
-                  {marketplaceConfig.appId?.toString() ?? 'Not configured'}
+              </label>
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-xs text-slate-400">
+                <span className="mb-1 block text-[11px] uppercase tracking-[0.18em] text-slate-500">Status</span>
+                <p className="text-sm text-slate-200">
+                  {activeAddress ? 'Wallet connected and ready' : 'No wallet connected'}
                 </p>
+                {message && <p className="mt-1 text-xs text-slate-500">{message}</p>}
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 flex-grow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {view === 'marketplace' ? (
-            <MarketplaceDashboard
-              listings={listings}
-              selectedListing={selectedListing}
-              permissionStatus={permissionStatus}
-              earnings={earnings}
-              loadingListings={loadingListings}
-              loadingPermission={loadingPermission}
-              loadingEarnings={loadingEarnings}
-              paymentBusy={paymentBusy}
-              onSelectListing={setSelectedIdentifier}
-              onRefreshListings={refreshListings}
-              onRefreshPermission={refreshPermission}
-              onRefreshEarnings={refreshEarnings}
-              onPayForAccess={handlePayForAccess}
-              appId={marketplaceConfig.appId}
-              apiAnalytics={apiAnalytics ?? undefined}
-              loadingAnalytics={loadingAnalytics}
-              marketplaceAnalytics={marketplaceAnalytics ?? undefined}
-              reputationScores={reputationScores}
-            />
-          ) : (
-            <SdkHarnessPage
-              network={network}
-              appId={marketplaceConfig.appId}
-              activeAddress={activeAddress}
-              transactionSigner={transactionSigner}
-            />
-          )}
-        </div>
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {view === 'marketplace' ? (
+          <MarketplaceDashboard
+            listings={listings}
+            selectedListing={selectedListing}
+            permissionStatus={permissionStatus}
+            earnings={earnings}
+            loadingListings={loadingListings}
+            loadingPermission={loadingPermission}
+            loadingEarnings={loadingEarnings}
+            paymentBusy={paymentBusy}
+            onSelectListing={setSelectedIdentifier}
+            onRefreshListings={refreshListings}
+            onRefreshPermission={refreshPermission}
+            onRefreshEarnings={refreshEarnings}
+            onPayForAccess={handlePayForAccess}
+            appId={marketplaceConfig.appId}
+            apiAnalytics={apiAnalytics ?? undefined}
+            loadingAnalytics={loadingAnalytics}
+            marketplaceAnalytics={marketplaceAnalytics ?? undefined}
+            reputationScores={reputationScores}
+            network={network}
+            activeAddress={activeAddress}
+            onSubmitRating={async (_apiId, rating) => {
+              const targetListing = listings.find((listing) => listing.identifier === _apiId)
+
+              if (!targetListing || !marketplaceConfig.appId || !activeAddress || !transactionSigner) {
+                setMessage('Connect a wallet before submitting a rating.')
+                return
+              }
+
+              await submitRating({
+                network,
+                appId: marketplaceConfig.appId,
+                sender: activeAddress,
+                transactionSigner,
+                apiListing: targetListing,
+                rating,
+              })
+
+              setMessage(`Submitted rating ${rating} for ${targetListing.title}.`)
+            }}
+          />
+        ) : (
+          <SdkHarnessPage
+            network={network}
+            appId={marketplaceConfig.appId}
+            activeAddress={activeAddress}
+            transactionSigner={transactionSigner}
+          />
+        )}
       </main>
 
-      <footer className="border-t border-dark-700 bg-dark-800/50 backdrop-blur mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-xs text-dark-500 text-center">
+      <footer className="border-t border-slate-800/60 bg-slate-950/85 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <p className="text-center text-xs text-slate-500">
             Powered by Algorand | Direct contract integration via AlgoKit Utils
           </p>
         </div>

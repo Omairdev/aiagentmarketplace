@@ -1,5 +1,5 @@
 import { useWallet } from '@txnlab/use-wallet-react'
-import { Wallet, LogOut, Copy, Check } from 'lucide-react'
+import { Check, Copy, LogOut, Wallet } from 'lucide-react'
 import { useState } from 'react'
 
 export function WalletPanel() {
@@ -16,8 +16,8 @@ export function WalletPanel() {
 
   if (!isReady) {
     return (
-      <div className="flex items-center justify-center px-4 py-2">
-        <div className="text-sm text-dark-400">Initializing wallets...</div>
+      <div className="flex items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3">
+        <div className="text-sm text-slate-400">Initializing wallets...</div>
       </div>
     )
   }
@@ -26,16 +26,16 @@ export function WalletPanel() {
 
   if (activeAddress && activeWallet) {
     return (
-      <div className="flex items-center gap-3">
-        <div className="bg-dark-700/50 border border-dark-600 rounded-lg px-4 py-2 flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span className="text-sm text-dark-200 font-medium">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-2.5">
+          <div className="size-2 rounded-full bg-emerald-400" />
+          <span className="text-sm font-medium text-emerald-100">
             {activeWallet.metadata?.name ?? activeWallet.id}
           </span>
         </div>
         <button
           onClick={handleCopyAddress}
-          className="bg-dark-700/50 hover:bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-sm font-mono text-dark-300 flex items-center gap-2 transition-colors"
+          className="flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-2.5 text-sm font-mono text-slate-200 transition hover:border-blue-500/40 hover:bg-slate-900"
           title="Click to copy address"
         >
           <Wallet size={16} />
@@ -48,7 +48,7 @@ export function WalletPanel() {
         </button>
         <button
           onClick={() => activeWallet.disconnect()}
-          className="btn-secondary flex items-center gap-2"
+          className="flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-4 py-2.5 text-sm font-semibold text-white transition hover:border-blue-500/40 hover:bg-slate-900"
         >
           <LogOut size={16} />
           Disconnect
@@ -58,12 +58,12 @@ export function WalletPanel() {
   }
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-wrap items-center gap-2">
       {wallets.map((wallet) => (
         <button
           key={wallet.id}
           onClick={() => wallet.connect()}
-          className="btn-primary flex items-center gap-2"
+          className="inline-flex items-center gap-2 rounded-2xl bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400"
         >
           <Wallet size={16} />
           Connect {wallet.metadata?.name ?? wallet.id}

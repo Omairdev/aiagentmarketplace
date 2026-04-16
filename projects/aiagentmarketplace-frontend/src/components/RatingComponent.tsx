@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Star, Send } from 'lucide-react'
+import { Send, Star } from 'lucide-react'
 import type { ApiListing } from '../lib/marketplace'
 
 interface RatingComponentProps {
@@ -37,20 +37,14 @@ export const RatingComponent: React.FC<RatingComponentProps> = ({
   }
 
   return (
-    <div
-      style={{
-        padding: '16px',
-        backgroundColor: '#262626',
-        borderRadius: '8px',
-        border: '1px solid #333',
-      }}
-    >
-      <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#fff' }}>
-        Rate this API
-      </h4>
+    <div className="rounded-2xl border border-slate-700 bg-slate-950/50 p-4">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h4 className="text-sm font-semibold text-white">Rate this API</h4>
+        {selectedRating > 0 && <span className="text-sm font-semibold text-amber-400">{selectedRating} / 5</span>}
+      </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', gap: '6px' }}>
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
@@ -58,57 +52,32 @@ export const RatingComponent: React.FC<RatingComponentProps> = ({
               onMouseEnter={() => setHoverRating(star)}
               onMouseLeave={() => setHoverRating(0)}
               disabled={submitting || isLoading}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: submitting || isLoading ? 'not-allowed' : 'pointer',
-                padding: '4px',
-                opacity: submitting || isLoading ? 0.6 : 1,
-              }}
+              className="rounded-lg p-1 transition disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Star
-                size={24}
-                style={{
-                  fill: star <= (hoverRating || selectedRating) ? '#FFB800' : '#DDD',
-                  color: star <= (hoverRating || selectedRating) ? '#FFB800' : '#DDD',
-                  transition: 'all 0.2s ease',
-                }}
+                size={22}
+                className={star <= (hoverRating || selectedRating) ? 'fill-amber-400 text-amber-400' : 'text-slate-600'}
               />
             </button>
           ))}
         </div>
-
-        {selectedRating > 0 && (
-          <span style={{ fontSize: '14px', fontWeight: '600', color: '#FFB800' }}>
-            {selectedRating} / 5 Stars
-          </span>
-        )}
       </div>
 
       {success && (
-        <div
-          style={{
-            padding: '8px 12px',
-            backgroundColor: '#1B5E20',
-            borderRadius: '4px',
-            color: '#81C784',
-            fontSize: '12px',
-            fontWeight: '500',
-          }}
-        >
+        <div className="mb-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
           ✓ Thank you! Your rating has been recorded on-chain.
         </div>
       )}
 
       {submitting && (
-        <div style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⏳</span>
-          <span style={{ color: '#BBB' }}>Submitting rating to blockchain...</span>
+        <div className="mb-3 flex items-center gap-2 text-sm text-slate-400">
+          <Send size={14} className="animate-pulse text-blue-400" />
+          <span>Submitting rating to blockchain...</span>
         </div>
       )}
 
       {!selectedRating && !success && (
-        <p style={{ margin: '0', fontSize: '12px', color: '#999', lineHeight: '1.4' }}>
+        <p className="text-xs leading-5 text-slate-500">
           Click a star to rate your experience with this API
         </p>
       )}

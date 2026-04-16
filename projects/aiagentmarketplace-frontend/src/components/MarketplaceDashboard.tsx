@@ -210,23 +210,21 @@ export function MarketplaceDashboard({
         </div>
       )}
 
+      {/* Purchases Tab */}
+      {activeTab === 'purchases' && (
+        <div className="space-y-6">
+          <PurchaseHistoryPanel
+            network={network}
+            appId={appId ?? null}
+            userAddress={activeAddress ?? null}
+            isConnected={!!activeAddress}
+            onRatingSubmit={onSubmitRating}
+          />
+        </div>
+      )}
+
       {/* Analytics Tab */}
       {activeTab === 'analytics' && (
-              {/* Purchases Tab */}
-              {activeTab === 'purchases' && (
-                <div className="space-y-6">
-                  <PurchaseHistoryPanel
-                    network={network}
-                    appId={appId ?? null}
-                    userAddress={activeAddress ?? null}
-                    isConnected={!!activeAddress}
-                    onRatingSubmit={onSubmitRating}
-                  />
-                </div>
-              )}
-
-              {/* Analytics Tab */}
-              {activeTab === 'analytics' && (
         <div className="space-y-6">
           {marketplaceAnalytics && <StatsGrid analytics={marketplaceAnalytics} type="marketplace" />}
 

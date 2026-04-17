@@ -1,55 +1,70 @@
-# aiagentmarketplace
+# 🤖 AI API Marketplace
+**The Decentralized App Store for the Autonomous Agent Economy.**
 
-This starter full stack project has been generated using AlgoKit. See below for default getting started instructions.
+---
 
-## Setup
+## 💡 The Idea
+The **AI API Marketplace** is a trustless, decentralized platform designed to facilitate an **agent-to-agent (A2A) economy**. 
 
-### Initial setup
-1. Clone this repository to your local machine.
-2. Ensure [Docker](https://www.docker.com/) is installed and operational. Then, install `AlgoKit` following this [guide](https://github.com/algorandfoundation/algokit-cli#install).
-3. Run `algokit project bootstrap all` in the project directory. This command sets up your environment by installing necessary dependencies, setting up a Python virtual environment, and preparing your `.env` file.
-4. In the case of a smart contract project, execute `algokit generate env-file -a target_network localnet` from the `aiagentmarketplace-contracts` directory to create a `.env.localnet` file with default configuration for `localnet`.
-5. To build your project, execute `algokit project run build`. This compiles your project and prepares it for running.
-6. For project-specific instructions, refer to the READMEs of the child projects:
-   - Smart Contracts: [aiagentmarketplace-contracts](projects/aiagentmarketplace-contracts/README.md)
-   - Frontend Application: [aiagentmarketplace-frontend](projects/aiagentmarketplace-frontend/README.md)
+In the current landscape, AI agents are limited by centralized payment gateways, rigid subscription models, and complex API key management. This project removes those barriers by allowing AI agents to autonomously discover, negotiate, pay for, and consume specialized AI services directly on the **Algorand Blockchain**. It transforms APIs from static services into liquid, on-chain assets that machines can trade in real-time.
 
-> This project is structured as a monorepo, refer to the [documentation](https://github.com/algorandfoundation/algokit-cli/blob/main/docs/features/project/run.md) to learn more about custom command orchestration via `algokit project run`.
+---
 
-### Subsequently
+## 🛠 Tech Stack
+This project leverages a high-performance, modern stack designed for speed and scalability:
 
-1. If you update to the latest source code and there are new dependencies, you will need to run `algokit project bootstrap all` again.
-2. Follow step 3 above.
+* **Blockchain:** [Algorand](https://www.algorand.com/) (Layer 1) for sub-4-second finality and near-zero transaction costs.
+* **Smart Contracts:** [TealScript](https://github.com/algorandfoundation/TEALScript) for writing secure, type-safe logic in a TypeScript-like syntax.
+* **Frontend:** [React](https://react.dev/) with [Tailwind CSS](https://tailwindcss.com/) for a sleek, modern dashboard.
+* **Development Framework:** [AlgoKit](https://github.com/algorandfoundation/algokit-cli) for full-stack orchestration and deployment.
+* **Protocol Standards:** **x402 (Payment Required)** standard for automated machine-to-machine payment handshakes.
+* **Storage:** **Algorand Box Storage** for cost-effective, high-speed on-chain metadata and registry management.
 
-### Continuous Integration / Continuous Deployment (CI/CD)
+---
 
-This project uses [GitHub Actions](https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions) to define CI/CD workflows, which are located in the [`.github/workflows`](./.github/workflows) folder. You can configure these actions to suit your project's needs, including CI checks, audits, linting, type checking, testing, and deployments to TestNet.
+## ⚖️ Why It’s Better Than Present Systems
 
-For pushes to `main` branch, after the above checks pass, the following deployment actions are performed:
-  - The smart contract(s) are deployed to TestNet using [AlgoNode](https://algonode.io).
-  - The frontend application is deployed to a provider of your choice (Netlify, Vercel, etc.). See [frontend README](frontend/README.md) for more information.
+| Feature | Current Centralized Systems | AI API Marketplace |
+| :--- | :--- | :--- |
+| **Accessibility** | Requires manual signup and credit cards. | Permissionless; use via Algorand wallet address. |
+| **Payment Model** | Monthly subscriptions (wasteful for small tasks). | **Pay-per-use** micropayments (< $0.001 fees). |
+| **Discovery** | Scattered across various platforms/hubs. | Unified, decentralized **On-Chain Registry**. |
+| **Trust** | Reliance on centralized provider uptime/fairness. | Immutable **Smart Contracts** and on-chain ratings. |
+| **Settlement** | Days/weeks for payment processing. | Instant **(< 4 seconds)** settlement. |
 
-> Please note deployment of smart contracts is done via `algokit deploy` command which can be invoked both via CI as seen on this project, or locally. For more information on how to use `algokit deploy` please see [AlgoKit documentation](https://github.com/algorandfoundation/algokit-cli/blob/main/docs/features/deploy.md).
+---
 
-## Tools
+## 🏗 Technical Architecture
+The project utilizes a **Two-Tier Architecture** to maximize decentralization:
 
-This project makes use of Python and React to build Algorand smart contracts and to provide a base project configuration to develop frontends for your Algorand dApps and interactions with smart contracts. The following tools are in use:
+1.  **The Client Layer (Frontend/SDK):** A headless SDK that AI agents use to perform "pre-flight" checks, sign transactions, and interact with the x402 protocol.
+2.  **The Truth Layer (Smart Contract):** A global state machine that manages API registrations, tracks user permissions via binary box keys, and stores immutable reputation scores.
 
-- Algorand, AlgoKit, and AlgoKit Utils
-- Python dependencies including Poetry, Black, Ruff or Flake8, mypy, pytest, and pip-audit
-- React and related dependencies including AlgoKit Utils, Tailwind CSS, daisyUI, use-wallet, npm, jest, playwright, Prettier, ESLint, and Github Actions workflows for build validation
+---
 
-### VS Code
+## 🚀 Future Implementation
+The roadmap for the AI API Marketplace focuses on full ecosystem autonomy:
 
-It has also been configured to have a productive dev experience out of the box in [VS Code](https://code.visualstudio.com/), see the [backend .vscode](./backend/.vscode) and [frontend .vscode](./frontend/.vscode) folders for more details.
+* **Dynamic Pricing:** Implementing on-chain "Dutch Auctions" where API prices adjust automatically based on real-time demand and provider load.
+* **Decentralized Governance (DAO):** Transitioning the marketplace to a community-led model where token holders vote on listed API categories and platform fees.
+* **ZK-Proof Privacy:** Integrating Zero-Knowledge Proofs to allow agents to prove they have paid for a service without revealing their full transaction history or identity.
+* **Cross-Chain Bridging:** Enabling agents on Ethereum, Solana, or Base to purchase Algorand-hosted APIs via cross-chain messaging protocols.
 
-## Integrating with smart contracts and application clients
+---
 
-Refer to the [aiagentmarketplace-contracts](projects/aiagentmarketplace-contracts/README.md) folder for overview of working with smart contracts, [projects/aiagentmarketplace-frontend](projects/aiagentmarketplace-frontend/README.md) for overview of the React project and the [projects/aiagentmarketplace-frontend/contracts](projects/aiagentmarketplace-frontend/src/contracts/README.md) folder for README on adding new smart contracts from backend as application clients on your frontend. The templates provided in these folders will help you get started.
-When you compile and generate smart contract artifacts, your frontend component will automatically generate typescript application clients from smart contract artifacts and move them to `frontend/src/contracts` folder, see [`generate:app-clients` in package.json](projects/aiagentmarketplace-frontend/package.json). Afterwards, you are free to import and use them in your frontend application.
+## 🛠️ Quick Start
 
-The frontend starter also provides an example of interactions with your ApiMarketplaceClient in [`AppCalls.tsx`](projects/aiagentmarketplace-frontend/src/components/AppCalls.tsx) component by default.
+### **1. Setup**
+```bash
+# Bootstrap dependencies
+algokit project bootstrap all
 
-## Next Steps
+# Start the local network
+algokit localnet start
 
-You can take this project and customize it to build your own decentralized applications on Algorand. Make sure to understand how to use AlgoKit and how to write smart contracts for Algorand before you start.
+cd projects/aiagentmarketplace-contracts
+npm run build
+algokit deploy localnet
+
+cd ../aiagentmarketplace-frontend
+npm run dev
